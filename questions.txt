@@ -1,0 +1,5 @@
+(1) Allocations fail in ./test 3 because the basic allocator splits blocks but never coalesces adjacent free blocks. This means external fragmentation where memory may be free in total, but it is divided into many small blocks, so first-fit cannot find one continuous free block large enough for some requests.
+
+(2) The coalescing allocator has better throughput as the maximum allocation size gets larger (especially at 128 and 256 bytes in the benchmark). Coalescing keeps larger reusable free regions available, so the allocator spends less time traversing a fragmented list looking for a usable block. At the smallest sizes, the basic allocator is faster because it doesnt have to do alignment and coalescing.
+
+(3) The coalescing allocator has the better fail rate. In the benchmark its fail rate stays near 10% across the sizes, while the basic allocator's fail rate goes up as the size goes up. Merging adjacent free blocks reduces external fragmentation and makes it more likely that contiguous block is available for a new request.

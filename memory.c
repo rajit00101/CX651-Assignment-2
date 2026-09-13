@@ -37,12 +37,48 @@ void * new_malloc(size_t size) {
             return NULL;
         }
 
+        freelist->size = 2048 - sizeof(m_header);
+        freelist->prev = NULL;
+        freelist->next = NULL;
+        freelist->in_use = 0;
 
+
+    }
+
+    m_header* curr = freelist;
+    while(curr != NULL) {
+        if(curr->in_use == 0 && curr->size >= size) {
+            if(curr->size >= size + sizeof(m_header) + 1) {
+                m_header* new_block = (m_header*)((char*)(curr + 1) + size);
+                new_block->size = curr->size - size - sizeof(m_header);
+                new_block->prev = curr;
+                new_block->next = curr->next;
+                new_block->in_use = 0;
+
+                if(curr->next != NULL) {
+                    curr->next->prev = new_block;
+                }
+
+                curr->next = new_block;
+                curr->size = size;
+            }
+
+            curr->in_use = 1;
+            return (void*)(curr + 1);
+        }
+
+        curr = curr->next;
     }
 
     return NULL;
 }
 
 void new_free(void * ptr) {
+
+    if(ptr == NULL) {
+        return;
+    }
+    m_header* block = ((m_header*)ptr) - 1;
+    block -> in_use = 0;
 
 }
